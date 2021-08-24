@@ -1,14 +1,20 @@
 <template>
   <div>
-    <div class="m-4 text-center title">
-      <h1>Lahmacun Shows</h1>
+    <AutoCompleteSearch
+      :defaultItems="defaultArcsiShows"
+      suggestionAttribute="name"
+      :searchFields="searchFields"
+      @update="onUpdate"
+      placeHolder="Search"
+    />
+    <div v-if="arcsiShowsList.length  > 0" >
+      <h1 class="m-4 text-center title">Lahmacun Shows</h1>
+      <ShowsLister :shows='arcsiShowsList' />
     </div>
-    <!-- Make a listing component -->
-    <ShowsLister :shows="arcsiShowsList" />
-    <div class="m-4 text-center title">
-      <h1>Past Shows</h1>
+    <div v-if="pastShowsList.length > 0">
+      <h1 class="m-4 text-center title">Past Shows</h1>
+      <ShowsLister :shows="pastShowsList" />
     </div>
-    <ShowsLister :shows="pastShowsList" />
   </div>
 </template>
 
@@ -17,49 +23,43 @@
 import { mediaServerURL } from '~/constants'
 
 export default {
-  components: {},
-
-  data() {
+  data () {
     return {
-      mediaServerURL
+      mediaServerURL,
+      defaultArcsiShows: this.$store.state.arcsiShows,
+      arcsiShows: this.$store.state.arcsiShows,
+      searchFields: ['name', 'description']
     }
   },
-  head() {
+  head () {
     return {
       title: 'Lahmacun Shows'
     }
   },
   computed: {
-    arcsiShows() {
-      return this.$store.state.arcsiShows
-    },
-    arcsiShowsList() {
+    arcsiShowsList () {
       if (this.arcsiShows) {
-        const arcsiShowsList = [...this.arcsiShows]
-        return arcsiShowsList.filter((show) => {
-          return !(show.archive_lahmastore_base_url === 'off-air' || !show.active)
-        }).sort((a, b) => a.name.localeCompare(b.name))
+        return this.arcsiShows.filter(show => (
+          !(show.archive_lahmastore_base_url === 'off-air' || !show.active)
+        )).sort((a, b) => a.name.localeCompare(b.name))
       }
       return null
     },
     pastShowsList () {
       if (this.arcsiShows) {
-        const arcsiShowsList = [...this.arcsiShows]
-        return arcsiShowsList.filter((show) => {
-          return !show.active
-        }).sort((a, b) => a.name.localeCompare(b.name))
+        return this.arcsiShows.filter(show => !show.active)
+          .sort((a, b) => a.name.localeCompare(b.name))
       }
       return null
     }
   },
-  mounted () {
-    // console.log(this.arcsiShows)
-  },
   methods: {
+    onUpdate (result) {
+      this.arcsiShows = result
+    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-
 </style>
